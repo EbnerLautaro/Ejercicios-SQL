@@ -109,7 +109,22 @@ FROM country co
 GROUP BY co.`Region`
 ORDER BY Population DESC
 
-
 -- 9. Listar el promedio de esperanza de vida (LifeExpectancy) por continente con una esperanza de vida entre 40 y 70 años.
 
+SELECT
+    DISTINCT co.`Continent`,
+    AVG(co.`LifeExpectancy`) as LifeExpectancy
+FROM country co
+WHERE
+    LifeExpectancy BETWEEN 40 and 70
+GROUP BY co.`Continent`
+
 -- 10. Listar la cantidad máxima, mínima, promedio y suma de habitantes por continente.
+
+SELECT
+    co.`Continent`,
+    MAX(co.`Population`),
+    MIN(co.`Population`),
+    SUM(co.`Population`)
+FROM country co
+GROUP BY co.`Continent`
