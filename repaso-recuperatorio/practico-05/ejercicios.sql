@@ -110,10 +110,8 @@ ALTER TABLE inventory ADD COLUMN stock INT DEFAULT 5
 DELIMITER //
 
 CREATE TRIGGER UPDATE_STOCK AFTER INSERT ON RENTAL 
-FOR EACH ROW BEGIN UPDATE 
-	UPDATE
-	UPDATE
-	UPDATE inventory i
+FOR EACH ROW BEGIN 
+    UPDATE inventory i
 	SET stock = stock - 1
 	WHERE
 	    i.inventory_id = NEW.inventory_id;
@@ -140,12 +138,49 @@ FOR EACH ROW BEGIN UPDATE
 
 -- 11. Cree una tabla `fines` que tenga dos campos: `rental_id` y `amount`. El primero es una clave foránea a la tabla rental y el segundo es un valor numérico con dos decimales.
 
-
+CREATE TABLE
+    `fines` (
+        rental_id INT,
+        amount DECIMAL(10, 2),
+        FOREIGN KEY (rental_id) REFERENCES rental(rental_id)
+    );
 
 -- 12. Cree un procedimiento `check_date_and_fine` que revise la tabla `rental` y cree un registro en la tabla `fines` por cada `rental` cuya devolución (return_date) haya tardado más de 3 días (comparación con rental_date). El valor de la multa será el número de días de retraso multiplicado por 1.5.
 
+SELECT * FROM fines 
+
+DELIMITER //
+
+CREATE PROCEDURE `CHECK_DATE_AND_FINE`() BEGIN
+	INSERT INTO
+	    fines (rental_id, amount) (
+	        SELECT
+	            r.rental_id,
+	            DATEDIFF(NOW(), r.return_date) * 1.5
+	        FROM rental r
+	        WHERE
+	            DATEDIFF(NOW(), r.return_date) > 3
+	    );
+	END DELIMITER;
+
+
+-- CALL `CHECK_DATE_AND_FINE`();
+
 -- 13. Crear un rol `employee` que tenga acceso de inserción, eliminación y actualización a la tabla `rental`.
 
+CREATE ROLE `employee`;
+GRANT INSERT, DELETE, UPDATE ON sakila.rental TO employee;
+
 -- 14. Revocar el acceso de eliminación a `employee` y crear un rol `administrator` que tenga todos los privilegios sobre la BD `sakila`.
+REVOKE DELETE ON rental FROM employee;
+CREATE ROLE `administrator`;
+GRANT ALL PRIVILEGES on sakila.* to `administrator`;
+
 
 -- 15. Crear dos roles de empleado. A uno asignarle los permisos de `employee` y al otro de `administrator`.
+
+create role `user1`;
+grant `employee` to `user1`;
+
+create role `user2`;
+grant `administrator` to `user2`;
